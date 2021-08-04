@@ -9,6 +9,8 @@ deta = "*"
 flask = "*"
 
 [dev-packages]
+pylint = "*"
+black = "==21.7b0"
 
 [requires]
 python_version = "3.7"
