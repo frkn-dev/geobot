@@ -32,11 +32,12 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             users.insert({"state": None}, str(message.chat.id))
         except Exception:  # pylint: disable=W0703
             users.update({"state": None}, str(message.chat.id))
-        bot.send_message(
-            message.chat.id,
-            "👋 Hi, i will help you with ```geocoding``` - \
-            finding the coordinates of a place by name.",
-        )
+        with open("static/cover.png", "rb") as cover:
+            bot.send_photo(
+                message.chat.id,
+                photo=cover,
+                caption="👋 Hi, i will help you with `geocoding` - finding the coordinates of a place by name.",
+            )
 
     return bot
 
