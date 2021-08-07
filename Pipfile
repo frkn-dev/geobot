@@ -8,6 +8,7 @@ pytelegrambotapi = "*"
 deta = "*"
 flask = "*"
 requests = "*"
+gunicorn = "*"
 
 [dev-packages]
 pylint = "*"
