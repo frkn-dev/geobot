@@ -3,6 +3,7 @@ charset-normalizer==2.0.4; python_version >= '3'
 click==8.0.1
 deta==1.0.0
 flask==2.0.1
+gunicorn==20.1.0
 idna==3.2; python_version >= '3'
 importlib-metadata==4.6.3; python_version < '3.8'
 itsdangerous==2.0.1
