@@ -133,3 +133,6 @@ dmypy.json
 
 # ngrok
 ngrok
+
+# deta
+.deta/*
