@@ -72,7 +72,9 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                 bot.delete_message(message.chat.id, message.message_id)
                 bot.send_message(
                     message.chat.id,
-                    "🌎 I found these places by searching for \"{}\":".format(message.text),
+                    '🌎 I found these places by searching for "{}":'.format(
+                        message.text
+                    ),
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
@@ -92,7 +94,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             raise exc
         users.update({"state": None}, str(message.chat.id))
 
-    @bot.callback_query_handler(func=lambda call: call.data)
+    @bot.callback_query_handler(func=lambda call: ":" in call.data)
     def show_location(callback: telebot.types.CallbackQuery):
         """
         Handler for inline keyboard buttons.
