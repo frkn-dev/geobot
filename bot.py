@@ -146,6 +146,28 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             ),
         )
 
+    @bot.callback_query_handler(
+        func=lambda call: call.data
+        in ["country", "state", "county", "city", "street", "postal_code"]
+    )
+    def add_details(callback: telebot.types.CallbackQuery):
+        """
+        Handler for inline keyboard buttons of advanced search menu.
+        """
+        markup = callback.message.reply_markup
+        for row in markup.keyboard:
+            for button in row:
+                if button.callback_data == callback.data:
+                    button.text = (
+                        f"✔️ {button.text}"
+                        if not button.text.startswith("✔️")
+                        else button.text[1:]
+                    )
+        bot.edit_message_reply_markup(
+            callback.message.chat.id,
+            callback.message.message_id,
+            reply_markup=markup,
+        )
     return bot
 
 
