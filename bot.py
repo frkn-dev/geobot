@@ -99,8 +99,10 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
 
         Sends a location to the user.
         """
+        latitude, longitude = 0, 0
         if ":" in callback.data:
-            latitude, longitude = callback.data.split(":")
+            latitude, longitude = callback.data.split(":")   
+
         bot.delete_message(
             callback.message.chat.id, callback.message.message_id
         )
