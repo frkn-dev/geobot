@@ -27,7 +27,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         """
         Handler for /start command.
 
-        Send welcome message.
+        Sends welcome message.
         Adds the user to the database or sets the default state.
         """
         try:
@@ -38,7 +38,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             bot.send_photo(
                 message.chat.id,
                 photo=cover,
-                caption="👋 Hi, i will help you with `geocoding` - finding the coordinates of a place by name.",
+                caption="👋 Hi, I will help you with `geocoding` - finding the coordinates of a place by name.",
             )
 
     @bot.message_handler(commands=["search"])
@@ -46,7 +46,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         """
         Handler for /search command.
 
-        Send a welcome message to search.
+        Sends a welcome message to search.
         """
         users.update({"state": "search"}, str(message.chat.id))
         bot.send_message(
