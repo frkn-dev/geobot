@@ -16,6 +16,7 @@ emojis = {
     "motorway": "\U0001F6E3",
     "postbox": "\U0001F4EE",
     "city": "\U0001F3D9",
+    "check box": "\U0001FE0F"
 }
 
 
@@ -115,10 +116,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
 
         Sends a location to the user.
         """
-        latitude, longitude = 0, 0
-        if ":" in callback.data:
-            latitude, longitude = callback.data.split(":")
-
+        latitude, longitude = callback.data.split(":")
         bot.delete_message(
             callback.message.chat.id, callback.message.message_id
         )
@@ -139,7 +137,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         users.update({"state": "advanced_search"}, str(message.chat.id))
         bot.send_message(
             message.chat.id,
-            f"{emojis['diamond']} This is an advanced way to search place location. It is more accurate, but requires more precise data.\nChoose exactly what you know about the location you are looking for:",
+            f"{emojis['diamond']} This is an *advanced way to search place location.* It is more accurate, but requires more precise data.\n{emojis['check box']} Choose exactly what you know about the location you are looking for:",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
