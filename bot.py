@@ -15,6 +15,7 @@ emojis = {
     "diamond": "\U0001F539",
     "motorway": "\U0001F6E3",
     "postbox": "\U0001F4EE",
+    "city": "\U0001F3D9",
 }
 
 
@@ -150,7 +151,9 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                         InlineKeyboardButton("County", callback_data="county"),
                     ],
                     [
-                        InlineKeyboardButton("🏙️ City", callback_data="city"),
+                        InlineKeyboardButton(
+                            f"{emojis['city']} City", callback_data="city"
+                        ),
                         InlineKeyboardButton(
                             f"{emojis['motorway']} Street",
                             callback_data="street",
