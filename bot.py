@@ -72,15 +72,13 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                 bot.delete_message(message.chat.id, message.message_id)
                 bot.send_message(
                     message.chat.id,
-                    "🌎 I found these places by searching for \"{}\":".format(message.text),
+                    f'🌎 I found these places by searching for "{message.text}":',
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
                                 InlineKeyboardButton(
                                     location["display_name"],
-                                    callback_data="{}:{}".format(
-                                        location["lat"], location["lon"]
-                                    ),
+                                    callback_data=f"{location['lat']}:{location['lon']}"
                                 )
                             ]
                             for location in locations
