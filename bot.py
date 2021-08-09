@@ -90,7 +90,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             raise exc
         users.update({"state": None}, str(message.chat.id))
 
-    @bot.callback_query_handler(func=lambda call: call.data)
+    @bot.callback_query_handler(func=lambda call: ":" in call.data)
     def show_location(callback: telebot.types.CallbackQuery):
         """
         Handler for inline keyboard buttons.
@@ -110,7 +110,62 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             longitude,
             reply_markup=callback.message.reply_markup,
         )
+    @bot.message_handler(commands=["advanced"])
+    def welcome_advanced_search(message: telebot.types.Message):
+        """
+        Handler for /advanced command.
 
+        Send a welcome message to advanced search.
+        """
+        users.update({"state": "advanced_search"}, str(message.chat.id))
+        bot.send_message(
+            message.chat.id,
+            "🔹 This is an advancde way to search place location. It is more accurate, but requires more precise data.\nChoose exactly what you know about the location you are looking for:",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "🌎 Country", callback_data="country"
+                        ),
+                        InlineKeyboardButton("State", callback_data="state"),
+                        InlineKeyboardButton("County", callback_data="county"),
+                    ],
+                    [
+                        InlineKeyboardButton("🏙️ City", callback_data="city"),
+                        InlineKeyboardButton(
+                            "🛣️ Street", callback_data="street"
+                        ),
+                        InlineKeyboardButton(
+                            "📮 Postal code", callback_data="postal_code"
+                        ),
+                    ],
+                    [InlineKeyboardButton("🔍 Search", callback_data="search")],
+                ]
+            ),
+        )
+
+    @bot.callback_query_handler(
+        func=lambda call: call.data
+        in ["country", "state", "county", "city", "street", "postal_code"]
+    )
+    def add_details(callback: telebot.types.CallbackQuery):
+        """
+        Handler for inline keyboard buttons of advanced search menu.
+        """
+        markup = callback.message.reply_markup
+        for row in markup.keyboard:
+            for button in row:
+                if button.callback_data == callback.data:
+                    button.text = (
+                        f"✔️ {button.text}"
+                        if not button.text.startswith("✔️")
+                        else button.text[1:]
+                    )
+        bot.edit_message_reply_markup(
+            callback.message.chat.id,
+            callback.message.message_id,
+            reply_markup=markup,
+        )
     return bot
 
 
