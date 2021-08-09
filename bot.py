@@ -7,6 +7,15 @@ from deta import Deta
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
+emojis = {'waving hand':        '\U0001F44B',
+          'magnifying glass':   '\U0001F50D',
+          'earth':              '\U0001F30E',
+          'thinking face':      '\U0001F914',
+          'diamond':            '\U0001F539',
+          'motorway':           '\U0001F6E3',
+          'postbox':            '\U0001F4EE'}
+
+
 def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
     """
     Creates an instance of the bot.
@@ -38,7 +47,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             bot.send_photo(
                 message.chat.id,
                 photo=cover,
-                caption="👋 Hi, I will help you with `geocoding` - finding the coordinates of a place by name.",
+                caption=f"{emojis['waving hand']} Hi, I will help you with `geocoding` - finding the coordinates of a place by name.",
             )
 
     @bot.message_handler(commands=["search"])
@@ -51,7 +60,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         users.update({"state": "search"}, str(message.chat.id))
         bot.send_message(
             message.chat.id,
-            "🔍 Send any name of the place to start the search.",
+            f"{emojis['magnifying glass']} Send any name of the place to start the search.",
         )
 
     @bot.message_handler(
@@ -67,12 +76,12 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                 {"q": message.text, "format": "json"},
             ).json()
             if len(locations) == 0:
-                bot.send_message(message.chat.id, "🔍 No results found.")
+                bot.send_message(message.chat.id, f"{emojis['magnifying glass']} No results found.")
             else:
                 bot.delete_message(message.chat.id, message.message_id)
                 bot.send_message(
                     message.chat.id,
-                    f'🌎 I found these places by searching for "{message.text}":',
+                    f'{emojis["earth"]} I found these places by searching for "{message.text}":',
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
@@ -86,7 +95,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                     ),
                 )
         except Exception as exc:  # pylint: disable=W0703
-            bot.send_message(message.chat.id, "🤔 Oops. Something went wrong.")
+            bot.send_message(message.chat.id, f"{emojis['thinking face']} Oops. Something went wrong.")
             raise exc
         users.update({"state": None}, str(message.chat.id))
 
@@ -115,17 +124,17 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         """
         Handler for /advanced command.
 
-        Send a welcome message to advanced search.
+        Sends a welcome message to advanced search.
         """
         users.update({"state": "advanced_search"}, str(message.chat.id))
         bot.send_message(
             message.chat.id,
-            "🔹 This is an advancde way to search place location. It is more accurate, but requires more precise data.\nChoose exactly what you know about the location you are looking for:",
+            f"{emojis['diamond']} This is an advanced way to search place location. It is more accurate, but requires more precise data.\nChoose exactly what you know about the location you are looking for:",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            "🌎 Country", callback_data="country"
+                            f"{emojis['earth']} Country", callback_data="country"
                         ),
                         InlineKeyboardButton("State", callback_data="state"),
                         InlineKeyboardButton("County", callback_data="county"),
@@ -133,13 +142,14 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                     [
                         InlineKeyboardButton("🏙️ City", callback_data="city"),
                         InlineKeyboardButton(
-                            "🛣️ Street", callback_data="street"
+                            f"{emojis['motorway']} Street", callback_data="street"
                         ),
                         InlineKeyboardButton(
-                            "📮 Postal code", callback_data="postal_code"
+                            f"{emojis['postbox']} Postal code", callback_data="postal_code"
                         ),
                     ],
-                    [InlineKeyboardButton("🔍 Search", callback_data="search")],
+                    [InlineKeyboardButton(
+                        f"{emojis['magnifying glass']} Search", callback_data="search")],
                 ]
             ),
         )
