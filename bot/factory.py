@@ -4,20 +4,13 @@ This module provides a factory method that creates an instance of the bot.
 import requests
 import telebot
 from deta import Deta
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import (
+    ForceReply,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 
-
-emojis = {
-    "waving hand": "\U0001F44B",
-    "magnifying glass": "\U0001F50D",
-    "earth": "\U0001F30E",
-    "thinking face": "\U0001F914",
-    "diamond": "\U0001F539",
-    "motorway": "\U0001F6E3",
-    "postbox": "\U0001F4EE",
-    "city": "\U0001F3D9",
-    "check box": "\u2611\ufe0f",
-}
+from . import messages
 
 
 def get_locations(query: str = None, **details: dict) -> list:
@@ -72,7 +65,7 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             bot.send_photo(
                 message.chat.id,
                 photo=cover,
-                caption=f"{emojis['waving hand']} Hi, I will help you with `geocoding` - finding the coordinates of a place by name.",
+                caption=messages.START_MESSAGE.substitute(),
             )
 
     @bot.message_handler(commands=["search"])
@@ -85,7 +78,8 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         users.update({"state": "search"}, str(message.chat.id))
         bot.send_message(
             message.chat.id,
-            f"{emojis['magnifying glass']} Send any name of the place to start the search.",
+            messages.SIMPLE_SEARCH_WELCOME_MESSAGE.substitute(),
+            reply_markup=ForceReply(),
         )
 
     @bot.message_handler(commands=["advanced"])
@@ -98,12 +92,12 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         users.update({"state": "advanced_search"}, str(message.chat.id))
         bot.send_message(
             message.chat.id,
-            f"{emojis['diamond']} This is an *advanced way to search place location.* It is more accurate, but requires more precise data.\n{emojis['check box']} Choose exactly what you know about the location you are looking for:",
+            messages.ADVANCED_SEARCH_WELCOME_MESSAGE.substitute(),
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            f"{emojis['earth']} Country",
+                            f"\U0001F30E Country",
                             callback_data="country",
                         ),
                         InlineKeyboardButton("State", callback_data="state"),
@@ -111,20 +105,20 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                     ],
                     [
                         InlineKeyboardButton(
-                            f"{emojis['city']} City", callback_data="city"
+                            f"\U0001F3D9 City", callback_data="city"
                         ),
                         InlineKeyboardButton(
-                            f"{emojis['motorway']} Street",
+                            f"\U0001F6E3 Street",
                             callback_data="street",
                         ),
                         InlineKeyboardButton(
-                            f"{emojis['postbox']} Postal code",
+                            f"\U0001F4EE Postal code",
                             callback_data="postal code",
                         ),
                     ],
                     [
                         InlineKeyboardButton(
-                            f"{emojis['magnifying glass']} Search",
+                            f"\U0001F50D Search",
                             callback_data="search",
                         )
                     ],
@@ -139,37 +133,28 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         """
         A simple nominatim search for a given query text.
         """
-        try:
-            locations = get_locations(query=message.text)
-            if len(locations) == 0:
-                bot.send_message(
-                    message.chat.id,
-                    f"{emojis['magnifying glass']} No results found.",
-                )
-            else:
-                bot.delete_message(message.chat.id, message.message_id)
-                bot.send_message(
-                    message.chat.id,
-                    f'{emojis["earth"]} I found these places by searching for "{message.text}":',
-                    reply_markup=InlineKeyboardMarkup(
-                        [
-                            [
-                                InlineKeyboardButton(
-                                    location["display_name"],
-                                    callback_data=f"{location['lat']}:{location['lon']}",
-                                )
-                            ]
-                            for location in locations
-                        ]
-                    ),
-                )
-        except Exception as exc:  # pylint: disable=W0703
+        locations = get_locations(query=message.text)
+        if len(locations) == 0:
             bot.send_message(
                 message.chat.id,
-                f"{emojis['thinking face']} Oops. Something went wrong.",
+                messages.NO_RESULTS_FOUND_MESSAGE.substitute(),
             )
-            raise exc
-        users.update({"state": None}, str(message.chat.id))
+        else:
+            bot.send_message(
+                message.chat.id,
+                messages.SIMPLE_SEARCH_MESSAGE.substitute(query=message.text),
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(
+                                location["display_name"],
+                                callback_data=f"{location['lat']}:{location['lon']}",
+                            )
+                        ]
+                        for location in locations
+                    ]
+                ),
+            )
 
     @bot.callback_query_handler(func=lambda call: ":" in call.data)
     def show_location(callback: telebot.types.CallbackQuery):
@@ -232,60 +217,61 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                 key=str(callback.message.chat.id),
             )
             if len(details) > 1:
-                message_text = (
-                    "Ok. Send me {} names separated by comma.".format(
-                        ", ".join(details)
-                    )
+                message_text = messages.WAIT_FOR_DETAILS_MESSAGE.substitute(
+                    details=", ".join(details)
                 )
             else:
-                message_text = f"Ok. Send me {details[0]} name."
+                message_text = messages.WAIT_FOR_DETAIL_MESSAGE.substitute(
+                    detail=details[0]
+                )
             bot.edit_message_text(
                 message_text,
                 callback.message.chat.id,
                 callback.message.message_id,
+                reply_markup=ForceReply(),
             )
         else:
             bot.answer_callback_query(
                 callback.id,
-                "You need to know at least one of the details of the place.",
+                messages.NEED_MORE_DETAILS_MESSAGE.substitute(),
             )
 
-        @bot.message_handler(
-            func=lambda msg: users.get(str(msg.chat.id))["state"]
-            == "advanced_search"
-        )
-        def advanced_search(message: telebot.types.Message):
-            details_types = users.get(str(message.chat.id))["details"]
-            details = [detail.strip() for detail in message.text.split(",")]
-            if len(details) != len(details_types):
+    @bot.message_handler(
+        func=lambda msg: users.get(str(msg.chat.id))["state"]
+        == "advanced_search"
+    )
+    def advanced_search(message: telebot.types.Message):
+        details_types = users.get(str(message.chat.id))["details"]
+        details = [detail.strip() for detail in message.text.split(",")]
+        if len(details) != len(details_types):
+            bot.send_message(
+                message.chat.id,
+                messages.INCORRECT_DETAILS_COUNT_MESSAGE.substitute(),
+            )
+        else:
+            locations = get_locations(**dict(zip(details_types, details)))
+            if len(locations) == 0:
                 bot.send_message(
                     message.chat.id,
-                    "You need to send all details for each place.",
+                    messages.NO_RESULTS_FOUND_MESSAGE.substitute(),
+                    reply_to_message_id=message.message_id,
                 )
             else:
-                locations = get_locations(**dict(zip(details_types, details)))
-                if len(locations) == 0:
-                    bot.send_message(
-                        message.chat.id,
-                        f"{emojis['magnifying glass']} No results found.",
-                        reply_to_message_id=message.message_id,
-                    )
-                else:
-                    bot.send_message(
-                        message.chat.id,
-                        f"{emojis['earth']} I found these places:",
-                        reply_markup=InlineKeyboardMarkup(
+                bot.send_message(
+                    message.chat.id,
+                    messages.ADVANCED_SEARCH_MESSAGE.substitute(),
+                    reply_markup=InlineKeyboardMarkup(
+                        [
                             [
-                                [
-                                    InlineKeyboardButton(
-                                        location["display_name"],
-                                        callback_data=f"{location['lat']}:{location['lon']}",
-                                    )
-                                ]
-                                for location in locations
+                                InlineKeyboardButton(
+                                    location["display_name"],
+                                    callback_data=f"{location['lat']}:{location['lon']}",
+                                )
                             ]
-                        ),
-                    )
+                            for location in locations
+                        ]
+                    ),
+                )
 
     return bot
 
