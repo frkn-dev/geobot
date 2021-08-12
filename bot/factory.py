@@ -61,12 +61,10 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             users.insert({"state": None}, str(message.chat.id))
         except Exception:  # pylint: disable=W0703
             users.update({"state": None}, str(message.chat.id))
-        with open("static/cover.png", "rb") as cover:
-            bot.send_photo(
-                message.chat.id,
-                photo=cover,
-                caption=messages.START_MESSAGE.substitute(),
-            )
+        bot.send_message(
+            message.chat.id,
+            messages.START_MESSAGE.substitute(),
+        )
 
     @bot.message_handler(commands=["search"])
     def welcome_search(message: telebot.types.Message):
