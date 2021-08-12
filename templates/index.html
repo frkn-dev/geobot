@@ -4,35 +4,26 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GeoBot</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>geobot</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
-        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
-
 </head>
 
 <body>
-    <section class="hero is-info is-fullheight">
+    <section class="hero is-black is-fullheight">
         <div class="hero-body">
-            <div class="container has-text-centered">
-                <div class="columns is-flex is-centered">
-                    <figure class="image" style="width: 512px;">
-                        <img src="{{ url_for('static', filename = 'logo_transparent_small.png') }}">
-                    </figure>
-                </div>
+            <div>
+                <img src="{{ url_for('static', filename='logo.svg') }}" width="300rem">
                 <p class="subtitle">
-                    Bot that improves the geocoding experience in Telegram
+                    Find places without leaving Telegram.<br>
                 </p>
-                <a href="https://t.me/the_geo_bot" class="button is-info is-inverted">
-                    <span class="icon">
-                        <i class="fab fa-telegram"></i>
-                    </span>
-                    <span>Open bot</span>
+                <a href="https://t.me/the_geo_bot" class="button is-white is-outlined">
+                    <strong>
+                        ⛯ Try it!
+                    </strong>
                 </a>
             </div>
         </div>
     </section>
 </body>
-
 </html>
