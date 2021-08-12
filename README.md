@@ -34,6 +34,10 @@
 ### **TODO:**
 
 - [ ] i18n
-- [ ] Better landing page
-- [ ] Keyboard menu on `/start`
+    - [ ] Russian
+    - [ ] English
 - [ ] Locations pagination
+- [ ] Keyboard menu on `/start`
+- [ ] Errors report on `/report`
+- [ ] Integration test: [tgintegration](https://github.com/JosXa/tgintegration)
+- [ ] Better landing page
