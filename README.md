@@ -34,3 +34,6 @@
 ### **TODO:**
 
 - [ ] i18n
+- [ ] Better landing page
+- [ ] Keyboard menu on `/start`
+- [ ] Locations pagination
