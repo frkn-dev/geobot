@@ -30,13 +30,4 @@
 
 `/advanced` - search with known details(country/state/city/etc.)
 
-
-### **TODO:**
-
-- [ ] i18n
-    - [ ] Russian
-    - [ ] English
-- [ ] Locations pagination
-- [ ] Errors report on `/report`
-- [ ] Integration test: [tgintegration](https://github.com/JosXa/tgintegration)
-- [ ] Better landing page
+`/help` - send commands list 
