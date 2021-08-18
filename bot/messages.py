@@ -25,6 +25,13 @@ NEED_MORE_DETAILS_MESSAGE = Template(
 INCORRECT_DETAILS_COUNT_MESSAGE = Template(
     "You need to send all details for each place."
 )
+HELP_MESSAGE = Template(
+    "Commands:\n"
+    + "/start - restart bot and send menu.\n"
+    + "/search - basic search with query.\n"
+    + "/advanced - advanced search with known details(contry/state/etc.)\n"
+    + "/help - show this message."
+)
 
 
 __all__ = [

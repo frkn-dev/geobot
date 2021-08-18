@@ -50,6 +50,16 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
     users = deta.Base("users")
     bot = telebot.TeleBot(bot_token, parse_mode="Markdown")
 
+    @bot.message_handler(commands=["help"])
+    def help(message: telebot.types.Message):
+        """
+        Sends a help message.
+        """
+        bot.send_message(
+            message.chat.id,
+            messages.HELP_MESSAGE.substitute(),
+        )
+
     @bot.message_handler(commands=["start"])
     def start(message: telebot.types.Message):
         """
