@@ -5,9 +5,10 @@ import requests
 import telebot
 from deta import Deta
 from telebot.types import (
-    ForceReply,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
 )
 
 from . import messages
@@ -61,12 +62,18 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             users.insert({"state": None}, str(message.chat.id))
         except Exception:  # pylint: disable=W0703
             users.update({"state": None}, str(message.chat.id))
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        keyboard.add(
+            KeyboardButton("Basic search"),
+            KeyboardButton("Advanced search"),
+        )
         bot.send_message(
             message.chat.id,
             messages.START_MESSAGE.substitute(),
+            reply_markup=keyboard,
         )
 
-    @bot.message_handler(commands=["search"])
+    @bot.message_handler(regexp=r"^(/search)|(Basic search)$")
     def welcome_search(message: telebot.types.Message):
         """
         Handler for /search command.
@@ -77,10 +84,9 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
         bot.send_message(
             message.chat.id,
             messages.SIMPLE_SEARCH_WELCOME_MESSAGE.substitute(),
-            reply_markup=ForceReply(),
         )
 
-    @bot.message_handler(commands=["advanced"])
+    @bot.message_handler(regexp=r"^(\/advanced)|(Advanced search)$")
     def welcome_advanced_search(message: telebot.types.Message):
         """
         Handler for /advanced command.
@@ -226,7 +232,6 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                 message_text,
                 callback.message.chat.id,
                 callback.message.message_id,
-                reply_markup=ForceReply(),
             )
         else:
             bot.answer_callback_query(
