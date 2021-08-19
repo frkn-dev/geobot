@@ -32,6 +32,9 @@ HELP_MESSAGE = Template(
     + "/advanced - advanced search with known details(contry/state/etc.)\n"
     + "/help - show this message."
 )
+CHANGE_CURRENT_PAGE_ERROR = Template(
+    "You are currently on this page."
+)
 
 
 __all__ = [

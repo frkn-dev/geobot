@@ -1,6 +1,9 @@
 """
 This module provides a factory method that creates an instance of the bot.
 """
+from typing import List, Tuple
+from pprint import pprint as print
+import zlib
 import requests
 import telebot
 from deta import Deta
@@ -33,6 +36,56 @@ def get_locations(query: str = None, **details: dict) -> list:
             {"format": "json", **details},
         ).json()
     return locations
+
+
+def location_name(lat: float, lon: float) -> str:
+    """
+    Returns the name of the location from the nominantim API.
+    """
+    return requests.get(
+        "https://nominatim.openstreetmap.org/reverse",
+        {"lat": lat, "lon": lon, "format": "json"},
+    ).json()["display_name"]
+
+
+def paginate_locations(
+    locations: List[Tuple[str, Tuple[float, float]]]
+) -> InlineKeyboardMarkup:
+    """
+    Returns a paginated inline keyboard with the given locations.
+
+    The locations are paginated in groups of 2.
+    Inline keyboard is splitted on two parts:
+        1. First part contains the first three locations.
+        2. Pages.
+    """
+    first = [
+        [
+            InlineKeyboardButton(
+                location[0],
+                callback_data=f"{location[1][0]}:{location[1][1]}",
+            )
+        ]
+        for location in locations[:2]
+    ]
+    if len(locations) > 2:
+        second = [
+            [
+                InlineKeyboardButton(
+                    index + 1,
+                    callback_data="/".join(
+                        ":".join(location[1]) for location in page
+                    ),
+                )
+                for index, page in enumerate(
+                    tuple(locations[i : i + 2])
+                    for i in range(0, len(locations), 2)
+                )
+            ]
+        ]
+    else:
+        second = []
+    return InlineKeyboardMarkup(first + second, row_width=5)
 
 
 def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
@@ -157,20 +210,20 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             bot.send_message(
                 message.chat.id,
                 messages.SIMPLE_SEARCH_MESSAGE.substitute(query=message.text),
-                reply_markup=InlineKeyboardMarkup(
+                reply_markup=paginate_locations(
                     [
-                        [
-                            InlineKeyboardButton(
-                                location["display_name"],
-                                callback_data=f"{location['lat']}:{location['lon']}",
-                            )
-                        ]
+                        (
+                            location["display_name"],
+                            (location["lat"], location["lon"]),
+                        )
                         for location in locations
                     ]
                 ),
             )
 
-    @bot.callback_query_handler(func=lambda call: ":" in call.data)
+    @bot.callback_query_handler(
+        func=lambda call: len(call.data.split(":")) == 2
+    )
     def show_location(callback: telebot.types.CallbackQuery):
         """
         Handler for inline keyboard buttons.
@@ -187,6 +240,35 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
             longitude,
             reply_markup=callback.message.reply_markup,
         )
+
+    @bot.callback_query_handler(func=lambda call: "/" in call.data)
+    def switch_page(callback: telebot.types.CallbackQuery):
+        """
+        Handler for pagination buttons.
+        """
+        pages = [callback.message.reply_markup.keyboard[2]]
+        locations = []
+        for coord in callback.data.split("/"):
+            lat, lon = coord.split(":")
+            locations.append(
+                [
+                    InlineKeyboardButton(
+                        location_name(lat, lon),
+                        callback_data=f"{lat}:{lon}",
+                    )
+                ]
+            )
+        try:
+            bot.edit_message_reply_markup(
+                callback.message.chat.id,
+                callback.message.message_id,
+                callback.inline_message_id,
+                reply_markup=InlineKeyboardMarkup(locations + pages),
+            )
+        except Exception:
+            bot.answer_callback_query(
+                callback.id, messages.CHANGE_CURRENT_PAGE_ERROR.substitute()
+            )
 
     @bot.callback_query_handler(
         func=lambda call: call.data
@@ -273,14 +355,12 @@ def get_bot(bot_token: str, deta_project_key: str) -> telebot.AsyncTeleBot:
                 bot.send_message(
                     message.chat.id,
                     messages.ADVANCED_SEARCH_MESSAGE.substitute(),
-                    reply_markup=InlineKeyboardMarkup(
+                    reply_markup=paginate_locations(
                         [
-                            [
-                                InlineKeyboardButton(
-                                    location["display_name"],
-                                    callback_data=f"{location['lat']}:{location['lon']}",
-                                )
-                            ]
+                            (
+                                location["display_name"],
+                                (location["lat"], location["lon"]),
+                            )
                             for location in locations
                         ]
                     ),
