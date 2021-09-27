@@ -13,7 +13,7 @@ bot = get_bot(
     environ.get("BOT_TOKEN"),
     environ.get("DETA_PROJECT_KEY"),
 )
-bot.set_webhook(environ.get("WEBHOOK_URL") + "/" + environ.get("BOT_TOKEN"))
+bot.set_webhook(environ.get("WEBHOOK_URL") + "/" + "webhook")
 
 
 @app.route("/")
@@ -24,16 +24,16 @@ def index():
     return flask.render_template("index.html")
 
 
-@app.route("/<token>", methods=["POST"])
-def webhook(token: str):
+@app.route("/webhook", methods=["POST"])
+def webhook():
     """
     Handle webhooks.
     """
-    data = flask.request.get_json(silent=True, force=True)
-    if data:
-        try:
-            update = telebot.types.Update.de_json(data)
-            bot.process_new_updates([update])
-        except Exception:  # pylint: disable=broad-except
-            ...
-    return "ok"
+    try:
+        data = flask.request.get_data().decode("utf-8")
+        update = telebot.types.Update.de_json(data)
+        bot.process_new_updates([update])
+        return "ok"
+    except Exception:  # pylint: disable=broad-except
+        flask.abort(403)
+    
